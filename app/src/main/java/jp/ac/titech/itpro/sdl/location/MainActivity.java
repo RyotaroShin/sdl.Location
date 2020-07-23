@@ -2,11 +2,18 @@ package jp.ac.titech.itpro.sdl.location;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +29,14 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
+
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -33,13 +48,22 @@ public class MainActivity extends AppCompatActivity implements
     };
     private final static int REQ_PERMISSIONS = 1111;
 
-
-    private TextView infoView;
+    public TextView textView;
+    public ImageView image;
 
     private GoogleApiClient apiClient;
     private FusedLocationProviderClient locationClient;
     private LocationRequest request;
     private LocationCallback callback;
+
+    private double lat;
+    private double lng;
+
+    public Bitmap photo;
+    public RestaurantInfo restaurantInfo = new RestaurantInfo();
+
+    public Button goButton;
+    public Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +71,11 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        infoView = findViewById(R.id.info_view);
+        //レイアウト関連
+        image = findViewById(R.id.imageView);
+        textView = findViewById(R.id.shopName);
+        goButton = findViewById(R.id.button2);
+        button = findViewById(R.id.button);
 
         apiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -67,13 +95,41 @@ public class MainActivity extends AppCompatActivity implements
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult != null) {
                     Location location = locationResult.getLastLocation();
-                    double lat = location.getLatitude();
-                    double lng = location.getLongitude();
-                    infoView.setText(getString(R.string.info_format, lat, lng));
+                    lat = location.getLatitude();
+                    lng = location.getLongitude();
                 }
             }
         };
+
+        //ボタン関連
+        final MainActivity thisActivity = this;
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick");
+                new Async(thisActivity).execute(lat,lng);
+            }
+        });
+
+        goButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(restaurantInfo == null)return;
+                // Create a Uri from an intent string. Use the result to create an Intent.
+                Uri gmmIntentUri = Uri.parse("google.streetview:cbll="+restaurantInfo.lat+","+restaurantInfo.lng);
+
+// Create an Intent from gmmIntentUri. Set the action to ACTION_VIEW
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+// Make the Intent explicit by setting the Google Maps package
+                mapIntent.setPackage("com.google.android.apps.maps");
+
+// Attempt to start an activity that can handle the Intent
+                startActivity(mapIntent);
+            }
+        });
     }
+
 
     @Override
     protected void onStart() {
