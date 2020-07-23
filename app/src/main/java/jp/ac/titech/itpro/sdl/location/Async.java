@@ -48,7 +48,7 @@ public class Async extends AsyncTask<Double,Void,Void>{
     public RestaurantInfo getJson(double lat, double lng){
         StringBuilder urlStrBuilder = new StringBuilder("https://maps.googleapis.com/maps/api/place/search/json");
         urlStrBuilder.append("?location=" + lat + "," + lng);
-        urlStrBuilder.append("&sensor=true&rankby=distance&types=restaurant&key=AIzaSyB7Pp7DhronhUe_aWSPw6ePzcR6AE3Dphg");
+        urlStrBuilder.append("&sensor=true&rankby=distance&types=restaurant&key=API");
 
         StringBuilder response = new StringBuilder();
 
@@ -130,7 +130,7 @@ public class Async extends AsyncTask<Double,Void,Void>{
         if(ref == "")return null;
         StringBuilder urlStrBuilder = new StringBuilder("https://maps.googleapis.com/maps/api/place/photo");
         urlStrBuilder.append("?photoreference="+ref);
-        urlStrBuilder.append("&maxwidth=400&key=AIzaSyB7Pp7DhronhUe_aWSPw6ePzcR6AE3Dphg");
+        urlStrBuilder.append("&maxwidth=400&key=API");
 
         try {
             URL u = new URL(urlStrBuilder.toString());
